@@ -163,10 +163,27 @@ const films = [
  * @param {Object[]} liste - Le tableau de films à afficher
  */
 function afficherFilmsConsole(liste) {
-  // TODO : console.log le nombre de films
-  // TODO : for...of → pour chaque film :
+  for(const titre of films) {
+    console.log(titre);
+  }
+  // console.log le nombre de films
+  console.log("Nombre de films : " + liste.length);
+  // for...of → pour chaque film :
   //   - if/else : note >= 8.5 → "★★★", >= 7 → "★★", sinon "★"
   //   - console.log avec template literal
+  for (let film of liste) {
+    let etoiles;
+    if (film.note >= 8.5) {
+      etoiles ="★★★";
+    }
+    else if (film.note >= 7) {
+      etoiles ="★★";
+    }
+    else {
+      etoiles ="★";
+    }
+    console.log(`${etoiles} ${film.titre} (${film.annee})`);
+  }
 }
 
 afficherFilmsConsole(films);
@@ -179,13 +196,14 @@ afficherFilmsConsole(films);
 
 /**
  * Trie les films par note décroissante.
- * [...liste] crée une copie, sort((a,b) => ...) compare.
+ * [...liste] crée une copie, spread, sort((a,b) => ...) compare.
  *
  * @param {Object[]} liste - Le tableau de films à trier
  * @returns {Object[]} Un NOUVEAU tableau trié
  */
 function trierParNote(liste) {
-  // TODO : return [...liste].sort(...)
+  // return [...liste].sort(...)
+  return [...liste].sort((a, b)=> b.note - a.note);
 }
 
 console.log("\n--- Triés par note ---");
@@ -206,8 +224,15 @@ afficherFilmsConsole(trierParNote(films));
  * @returns {Object[]} Les films correspondants
  */
 function rechercherFilm(liste, terme) {
-  // TODO : si pas de terme → retourner la liste entière
-  // TODO : filter → titre OU réalisateur contient le terme
+  // si pas de terme → retourner la liste entière
+  if (terme.length < 1) {
+    return liste;
+  }
+  // filter → titre OU réalisateur contient le terme
+  terme = terme.toLowerCase();
+  return liste.filter((film) => film.realisateur.toLowerCase().includes(terme) ||
+      film.titre.toLowerCase().includes(terme)
+  );
 }
 
 console.log("\n--- Recherche 'nolan' ---");
@@ -227,7 +252,18 @@ afficherFilmsConsole(rechercherFilm(films, "nolan"));
  */
 function creerCarteFilm(film) {
   // TODO : retourner un template literal avec le HTML
-  // Voir la carte d'exemple commentée dans index.html
+  return `
+  <article class="film-card">
+    <img src="${film.poster}" alt="${film.titre}" class="film-poster">
+      <div class="film-info">
+        <h3>${film.titre}</h3>
+        <p class="film-meta">${film.annee}· ${film.genre}</p>
+        <p class="film-realisateur">${film.realisateur}</p>
+        <div class="film-note">
+          <span class="note-badge">${film.note}</span>
+        </div>
+      </div>
+  </article>`;
 }
 
 /**
@@ -237,8 +273,17 @@ function creerCarteFilm(film) {
  */
 function afficherFilmsHTML(liste) {
   // TODO : sélectionner #films-container
+  const container = document.querySelector("#films-container");
   // TODO : si liste vide → message "Aucun film trouvé"
+  if(liste.lenght < 1) {
+    container.innerHTML = "<p class='empty-message'> Aucun film trouvé !</p>";
+  }
+  // Vide le container, supprime les films
+  container.innerHTML ="";
   // TODO : sinon → forEach pour construire le HTML
+  liste.forEach(film => {
+    container.innerHTML += creerCarteFilm(film);
+  });
 }
 
 
@@ -252,9 +297,14 @@ function afficherFilmsHTML(liste) {
  */
 function rafraichir() {
   // TODO : lire la valeur de #recherche
+  const recherche = document.querySelector("#recherche").value;
   // TODO : chaîner rechercherFilm → trierParNote → afficherFilmsHTML
+  let filmsTrouves = rechercherFilm(films, recherche);
+  afficherFilmsHTML(filmsTrouves);
 }
 
 // TODO : addEventListener "input" sur #recherche → rafraichir
+document.querySelector("#recherche").addEventListener("input", rafraichir);
 
 // TODO : appeler rafraichir() pour l'affichage initial
+rafraichir();
